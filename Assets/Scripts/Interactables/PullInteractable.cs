@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 public class PullInteractable : XRBaseInteractable
 {
@@ -9,15 +11,47 @@ public class PullInteractable : XRBaseInteractable
     public GameObject notch;
 
     public Animator bowAnimator;
+    public float pull = 0f;
 
-    private float CalculatePull(Vector3 pullPosition)
+    private IXRSelectInteractor pullInteractor = null;
+
+    public void SetPullInteractor(SelectEnterEventArgs args)
+    {
+        Debug.Log(args.interactorObject.ToString());
+        pullInteractor = args.interactorObject;
+    }
+
+    public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
+    {
+        base.ProcessInteractable(updatePhase);
+        if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic)
+        {
+            if(isSelected)
+            {
+                Vector3 pullPosition = pullInteractor.transform.position;
+                float pullAmount = CalculatePullAmount(pullPosition);
+                pull = pullAmount;
+                UpdateStringPullAnimation(pullAmount);
+            }
+        }
+    }
+
+    public void Release()
+    {
+        Debug.Log("Released");
+        pullInteractor = null;
+        pull = 0f;
+        UpdateStringPullAnimation(0);
+    }
+
+    private float CalculatePullAmount(Vector3 pullPosition)
     {
         Vector3 pullDirection = pullPosition - start.position;
-        Vector3 targetDirection = end.position - pullPosition;
+        Vector3 targetDirection = end.position - start.position;
         float maxLength = targetDirection.magnitude;
 
         targetDirection.Normalize();
-        float pullValue = Vector3.Dot(pullPosition, targetDirection) / maxLength;
+        float pullValue = Vector3.Dot(pullDirection, targetDirection) / maxLength;
         return Mathf.Clamp(pullValue, 0, 1);
     }
 

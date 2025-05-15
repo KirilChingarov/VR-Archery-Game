@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class ArrowController : MonoBehaviour
@@ -33,6 +34,18 @@ public class ArrowController : MonoBehaviour
 
         Vector3 force = transform.forward * speed * pullAmount;
         rigidbody.AddForce(force, ForceMode.Impulse);
+        StartCoroutine(RotateWithVelocity());
+    }
+
+    private IEnumerator RotateWithVelocity()
+    {
+        yield return new WaitForFixedUpdate();
+        while (isAirborne)
+        {
+            Quaternion newRotation = Quaternion.LookRotation(rigidbody.linearVelocity, transform.up);
+            transform.rotation = newRotation;
+            yield return null;
+        }
     }
 
     private void Stop()

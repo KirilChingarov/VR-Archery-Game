@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class ArrowController : MonoBehaviour
 {
-    [Header("References")]
     private PullInteractable bow;
     private Rigidbody rigidbody;
 

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -11,36 +12,34 @@ public class PullInteractable : XRBaseInteractable
     public GameObject notch;
 
     public Animator bowAnimator;
-    public float pull = 0f;
+
+    public event Action<float> OnRelease;
 
     private IXRSelectInteractor pullInteractor = null;
 
     public void SetPullInteractor(SelectEnterEventArgs args)
     {
-        Debug.Log(args.interactorObject.ToString());
         pullInteractor = args.interactorObject;
     }
 
     public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
     {
         base.ProcessInteractable(updatePhase);
-        if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic)
+
+        if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic && isSelected)
         {
-            if(isSelected)
-            {
-                Vector3 pullPosition = pullInteractor.transform.position;
-                float pullAmount = CalculatePullAmount(pullPosition);
-                pull = pullAmount;
-                UpdateStringPullAnimation(pullAmount);
-            }
+            float pullAmount = CalculatePullAmount(pullInteractor.transform.position);
+            UpdateStringPullAnimation(pullAmount);
         }
     }
 
     public void Release()
     {
-        Debug.Log("Released");
+        // Broadcast release
+        float onReleasePullAmount = CalculatePullAmount(pullInteractor.transform.position);
+        OnRelease.Invoke(onReleasePullAmount);
+
         pullInteractor = null;
-        pull = 0f;
         UpdateStringPullAnimation(0);
     }
 

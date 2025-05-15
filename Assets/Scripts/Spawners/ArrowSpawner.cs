@@ -3,6 +3,7 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class ArrowSpawner : MonoBehaviour
 {
+    [Header("References")]
     public GameObject arrowPrefab;
     public Transform notch;
     public PullInteractable bow;
@@ -24,6 +25,7 @@ public class ArrowSpawner : MonoBehaviour
     {
         if (currentArrow == null && !isArrowNotched) {
             currentArrow = Instantiate(arrowPrefab, notch);
+            currentArrow.GetComponent<ArrowController>().RegisterBow(bow);
             isArrowNotched = true;
         }
     }

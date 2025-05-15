@@ -7,12 +7,15 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 public class PullInteractable : XRBaseInteractable
 {
     [Space(10)]
+    [Header("References")]
     public Transform start;
     public Transform end;
-    public GameObject notch;
+    public Transform notch;
 
+    [Header("Animation")]
     public Animator bowAnimator;
 
+    [HideInInspector]
     public event Action<float> OnRelease;
 
     private IXRSelectInteractor pullInteractor = null;
@@ -29,7 +32,7 @@ public class PullInteractable : XRBaseInteractable
         if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic && isSelected)
         {
             float pullAmount = CalculatePullAmount(pullInteractor.transform.position);
-            UpdateStringPullAnimation(pullAmount);
+            UpdateStringPull(pullAmount);
         }
     }
 
@@ -40,7 +43,7 @@ public class PullInteractable : XRBaseInteractable
         OnRelease.Invoke(onReleasePullAmount);
 
         pullInteractor = null;
-        UpdateStringPullAnimation(0);
+        UpdateStringPull(0);
     }
 
     private float CalculatePullAmount(Vector3 pullPosition)
@@ -54,8 +57,10 @@ public class PullInteractable : XRBaseInteractable
         return Mathf.Clamp(pullValue, 0, 1);
     }
 
-    private void UpdateStringPullAnimation(float pullAmount)
+    private void UpdateStringPull(float pullAmount)
     {
         bowAnimator.Play("pull", 0, pullAmount);
+        Vector3 pullPosition = Vector3.forward * Mathf.Lerp(start.localPosition.z, end.localPosition.z, pullAmount);
+        notch.localPosition = new Vector3(notch.localPosition.x, notch.localPosition.y, pullPosition.z);
     }
 }

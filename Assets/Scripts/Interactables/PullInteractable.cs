@@ -11,18 +11,22 @@ public class PullInteractable : XRBaseInteractable
     public Transform start;
     public Transform end;
     public Transform notch;
-
-    [Header("Animation")]
-    public Animator bowAnimator;
-
+    
     [HideInInspector]
     public event Action<float> OnRelease;
+    
+    private LineRenderer _bowString;
+    private IXRSelectInteractor _pullInteractor = null;
 
-    private IXRSelectInteractor pullInteractor = null;
+    protected override void Awake()
+    {
+        base.Awake();
+        _bowString = gameObject.transform.parent.GetComponentInChildren<LineRenderer>();
+    }
 
     public void SetPullInteractor(SelectEnterEventArgs args)
     {
-        pullInteractor = args.interactorObject;
+        _pullInteractor = args.interactorObject;
     }
 
     public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
@@ -31,7 +35,7 @@ public class PullInteractable : XRBaseInteractable
 
         if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic && isSelected)
         {
-            float pullAmount = CalculatePullAmount(pullInteractor.transform.position);
+            float pullAmount = CalculatePullAmount(_pullInteractor.transform.position);
             UpdateStringPull(pullAmount);
         }
     }
@@ -39,10 +43,10 @@ public class PullInteractable : XRBaseInteractable
     public void Release()
     {
         // Broadcast release
-        float onReleasePullAmount = CalculatePullAmount(pullInteractor.transform.position);
+        float onReleasePullAmount = CalculatePullAmount(_pullInteractor.transform.position);
         OnRelease.Invoke(onReleasePullAmount);
 
-        pullInteractor = null;
+        _pullInteractor = null;
         UpdateStringPull(0);
     }
 
@@ -59,8 +63,8 @@ public class PullInteractable : XRBaseInteractable
 
     private void UpdateStringPull(float pullAmount)
     {
-        bowAnimator.Play("pull", 0, pullAmount);
         Vector3 pullPosition = Vector3.forward * Mathf.Lerp(start.localPosition.z, end.localPosition.z, pullAmount);
         notch.localPosition = new Vector3(notch.localPosition.x, notch.localPosition.y, pullPosition.z);
+        _bowString.SetPosition(1, pullPosition);
     }
 }
